@@ -105,7 +105,7 @@ public static class AnalysisHelper {
 
     public static Company AnalyzeDividendRate(this Company company) {
         if (company.DividendRate is > 2f) {
-            int point = (int)company.DividendRate.CalculateDiffRate(2f, 5f, 20f, 10f);
+            int point = (int)company.DividendRate.CalculateDiffRate(2f, 10f, 20f, 10f);
             return company.AddRecommend(point, $"시가배당률 높음: {company.DividendRate}");
         }
         
