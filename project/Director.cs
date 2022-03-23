@@ -14,7 +14,10 @@ using Newtonsoft.Json;
 static class Director {
 	private static StringBuilder log = new StringBuilder();
 	private static StringBuilder output = new StringBuilder();
-	private const string SavePath = @"C:\Users\서지호\Desktop\AnalysisOutput";
+
+	private static string SavePath(string extension, string filename = "", string rootfilename = "AnalysisOutput")
+		=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+			$"{rootfilename}{(string.IsNullOrEmpty(filename) ? "" : "_")}{filename}.{extension}");
 	
 	private static readonly int[] AlreadyAnalysis = new int[] { };
 
@@ -40,7 +43,7 @@ static class Director {
 	/// json 파일의 모든 기업을 Companies 배열에 Deserialize하고, 평가를 초기화한 후 분석하여 점수를 재산정합니다. 
 	/// </summary>
 	static async Task AnalysisAllFromJson() {
-		var json = await File.ReadAllTextAsync($"{SavePath}_result.json");
+		var json = await File.ReadAllTextAsync(SavePath("json", "data"));
 		List<Company> targets = JsonConvert.DeserializeObject<List<Company>>(json);
 
 		foreach (var company in targets) {
@@ -79,7 +82,7 @@ static class Director {
 				logCount++;
 				if(logCount > 10) {
 					log.AppendLine("로그 저장됨");
-					_ = File.WriteAllTextAsync($"{SavePath}_log.txt", log.ToString());
+					_ = File.WriteAllTextAsync(SavePath("txt", "log"), log.ToString());
 					log.AppendLine();
 					logCount = 0;
 				}
@@ -109,9 +112,9 @@ static class Director {
 			                  $"({company.RecommendPoint} - {company.WarningPoint})");
 		}
 		
-		File.WriteAllText($"{SavePath}.txt", output.ToString());
-		File.WriteAllText($"{SavePath}_log.txt", log.ToString());
-		File.WriteAllText($"{SavePath}_result.json", resultJson);
+		File.WriteAllText(SavePath("txt", "result"), output.ToString());
+		File.WriteAllText(SavePath("txt", "log"), log.ToString());
+		File.WriteAllText(SavePath("json", "data"), resultJson);
 		
 		Console.WriteLine("저장이 완료되었습니다.");
 	}
