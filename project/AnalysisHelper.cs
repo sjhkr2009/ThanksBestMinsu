@@ -62,8 +62,8 @@ public static class AnalysisHelper {
 
     private static Company AnalyzePerAbsolute(this Company company) {
         return company.Per switch {
-            > 30f => company.AddPenalty(20, $"PER 높음: {company.Per:0.0}"),
-            < 10f => company.AddRecommend(20, $"PER 낮음: {company.Per:0.0}"),
+            > 30f => company.AddPenalty((int)company.Per.CalculateDiffRate(30f, 20f, 30f, 10f), $"PER 높음: {company.Per:0.0}"),
+            < 10f => company.AddRecommend(Math.Clamp((int)((10f - company.Per) * 5), 1, 30), $"PER 낮음: {company.Per:0.0}"),
             _ => company
         };
     }
@@ -88,8 +88,8 @@ public static class AnalysisHelper {
     
     private static Company AnalyzeExpectedPerAbsolute(this Company company) {
         return company.ExpectedPer switch {
-            > 30f => company.AddPenalty(20, $"미래 PER 높음: {company.Per:0.0}"),
-            < 10f => company.AddRecommend(20, $"미래 PER 낮음: {company.Per:0.0}"),
+            > 30f => company.AddPenalty((int)company.ExpectedPer.CalculateDiffRate(30f, 20f, 30f, 10f), $"미래 PER 높음: {company.Per:0.0}"),
+            < 10f => company.AddRecommend(Math.Clamp((int)((10f - company.ExpectedPer) * 5), 1, 30), $"미래 PER 낮음: {company.Per:0.0}"),
             _ => company
         };
     }
