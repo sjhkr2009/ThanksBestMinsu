@@ -10,14 +10,14 @@ public static class AnalysisHelper {
     public static Company AddPenalty(this Company company, int point, string reason) {
         string msg = $"-{point} | {reason}";
         Logger?.AppendLine(msg);
-        company.WarningPoint += point;
+        company.WarningPoint += Math.Max(0, point);
         return company;
     }
     
     public static Company AddRecommend(this Company company, int point, string reason) {
         string msg = $"+{point} | {reason}";
         Logger?.AppendLine(msg);
-        company.RecommendPoint += point;
+        company.RecommendPoint += Math.Max(0, point);
         return company;
     }
     
@@ -79,7 +79,7 @@ public static class AnalysisHelper {
         
         float per = (float)company.Per;
         float expectPer = (float)company.ExpectedPer;
-        int point = (int)per.CalculateDiffRate(expectPer, 10f, 20f);
+        int point = (int)per.CalculateDiffRate(expectPer, 10f, 10f);
 
         return per > expectPer
             ? company.AddRecommend(point, $"PER 개선: {company.Per:0.0} -> {company.ExpectedPer:0.0}")
@@ -88,8 +88,8 @@ public static class AnalysisHelper {
     
     private static Company AnalyzeExpectedPerAbsolute(this Company company) {
         return company.ExpectedPer switch {
-            > 30f => company.AddPenalty((int)company.ExpectedPer.CalculateDiffRate(30f, 20f, 30f, 10f), $"미래 PER 높음: {company.Per:0.0}"),
-            < 10f => company.AddRecommend(Math.Clamp((int)((10f - company.ExpectedPer) * 5), 1, 30), $"미래 PER 낮음: {company.Per:0.0}"),
+            > 30f => company.AddPenalty((int)company.ExpectedPer.CalculateDiffRate(30f, 20f, 10f), $"미래 PER 높음: {company.Per:0.0}"),
+            < 10f => company.AddRecommend(Math.Clamp((int)((10f - company.ExpectedPer) * 5), 1, 10), $"미래 PER 낮음: {company.Per:0.0}"),
             _ => company
         };
     }
@@ -114,6 +114,11 @@ public static class AnalysisHelper {
     
     public static Company AnalyzeYearPerformance(this Company company) {
         var prev = company.YearPerformances[0];
+
+        float perAvg = 0f;
+        int perCount = 0;
+        float latestPer = 0f;
+        
 		for (int i = 0; i < company.YearPerformances.Length; i++) {
 			var cur = company.YearPerformances[i];
 
@@ -124,6 +129,12 @@ public static class AnalysisHelper {
 				company.AddPenalty(10 * (i + 1), when + $"당기순손실 ({cur.NetProfit}억)");
 			} else if (cur.GrossProfit is < 0) {
 				company.AddPenalty(10 * (i + 1), when + $"영업손실 ({cur.GrossProfit}억)");
+			}
+
+			if (cur.Per is > 0) {
+				perCount++;
+				perAvg += latestPer;
+				latestPer = (float) cur.Per;
 			}
 
 			if (i > 0 && cur.GrossProfit is > 0 && prev.GrossProfit != null) {
@@ -147,7 +158,7 @@ public static class AnalysisHelper {
 
 				prev = cur;
 			}
-			
+			/*
 			if (i > 0 && cur.Per is > 1f && prev.Per is > 1f) {
 				float max = cur.Per < 10f ? 10f : 5f;
 				max += i * (cur.Per < 10f ? 5f : 2f);
@@ -158,15 +169,8 @@ public static class AnalysisHelper {
 					company.AddRecommend((int)cur.Per.CalculateDiffRate((float) prev.Per, 20f, max), when + $"PER 감소 ({prev.Per} -> {cur.Per})");
 				}
 
-				if (cur.GrossProfit < prev.GrossProfit) {
-					float curProfit = (float)cur.GrossProfit;
-					float prevProfit = (float)prev.GrossProfit;
-					float decreaseRate = (1f - (curProfit / prevProfit)) * 100f;
-					company.AddPenalty(Math.Min((int)(decreaseRate * 0.5f), 20), when + $"영업이익 {decreaseRate:0.0}% 감소: {prev.GrossProfit} -> {cur.GrossProfit}");
-				}
-
 				prev = cur;
-			}
+			}*/
 
 			if (i >= company.YearPerformances.Length - 2) {
 				if (cur.DebtRatio is > 100f) {
@@ -184,6 +188,13 @@ public static class AnalysisHelper {
 				} else if (cur.ReserveRation is > 2000f) {
 					company.AddRecommend(5, when + $"유보율 높음 ({cur.ReserveRation:0.0}%)");
 				}
+			}
+		}
+
+		if (perCount > 1) {
+			perAvg /= perCount;
+			if (perAvg > latestPer) {
+				company.AddRecommend((int)perAvg.CalculateDiffRate(latestPer, 20f, 20f, 5f), $"최근 PER({latestPer})이 3년 평균({perAvg})보다 낮음");
 			}
 		}
 
@@ -206,14 +217,29 @@ public static class AnalysisHelper {
 
     public static Company AnalysisAll(this Company company) {
 	    Logger?.AppendLine($"{company.CompanyName}({company.Code:000000})에 대한 분석을 시작합니다.");
-	    company.WarningPoint = 0;
-	    company.RecommendPoint = 0;
-	    return company.AnalyzeMarketCap()
+	    return company.Clear()
+		    .AnalyzeMarketCap()
 		    .AnalyzePer()
 		    .AnalyzeExpectedPer()
 		    .AnalyzePbr()
 		    .AnalyzeDividendRate()
 		    .AnalyzeYearPerformance()
 		    .AnalysisQuarterPerformance();
+    }
+
+    public static void AddSectionOnLog(List<Company> companies) {
+	    Dictionary<string, List<Company>> dict = new Dictionary<string, List<Company>>();
+
+	    foreach (var company in companies) {
+		    string section = company.Section;
+		    if (string.IsNullOrEmpty(section)) section = "업종 정보 없음";
+		    if (dict.ContainsKey(section) == false) dict.Add(section, new List<Company>());
+
+		    dict[section].Add(company);
+	    }
+
+	    foreach (var pair in dict) {
+		    Logger?.AppendLine($"{pair.Key} - {pair.Value.Count}개");
+	    }
     }
 }

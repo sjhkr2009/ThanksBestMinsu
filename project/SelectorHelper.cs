@@ -5,6 +5,7 @@ public static class SelectorHelper {
     private const string NullValue = "N/A";
     
     private const string NameSelector = "#middle > div.h_company > div.wrap_company > h2 > a";
+    private const string SectionSelector = "#content > div.section.trade_compare > h4 > em > a";
 
     private const string MarketCapSelector = "#_market_sum";
     private const string TotalStockCountSelector = "#tab_con1 > div.first > table > tbody > tr:nth-child(3) > td > em";
@@ -60,6 +61,7 @@ public static class SelectorHelper {
     private static string ToSelectorString(Basic selected) {
         return selected switch {
             Basic.CompanyName => NameSelector,
+            Basic.Section => SectionSelector,
             Basic.DividendYield => DividendYieldSelector,
             Basic.MarketCap => MarketCapSelector,
             Basic.StockCount => TotalStockCountSelector,
@@ -117,6 +119,7 @@ public static class SelectorHelper {
 
     public enum Basic {
         CompanyName,    // 회사명
+        Section,        // 업종
         MarketCap,      // 시가총액
         StockCount,     // 상장주식수
         Price,          // 현재 주가

@@ -9,6 +9,8 @@ public class Company {
     
     public string CompanyName;
     public int Code;
+
+    public string Section;
     
     public int? MarketCap;
     public long? TotalStockCount;
@@ -39,6 +41,7 @@ public class Company {
 
         ret.Code = code;
         ret.CompanyName = SelectorHelper.GetValueByWeb(driver, SelectorHelper.Basic.CompanyName);
+        ret.Section = SelectorHelper.GetValueByWeb(driver, SelectorHelper.Basic.Section);
         
         string marketCapString = SelectorHelper.GetValueByWeb(driver, SelectorHelper.Basic.MarketCap)
             .Replace("조", "").Replace(",", "").Replace(" ", "");

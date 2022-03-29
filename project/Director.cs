@@ -9,7 +9,8 @@ using System.IO.MemoryMappedFiles;
 using System.Text;
 using Newtonsoft.Json;
 
-// 실행 파일 위치에 현재 설치된 크롬 버전에 맞는 chromedriver.exe 필요
+// 실행 파일 위치에 현재 기기에 설치된 크롬 버전에 맞는 chromedriver.exe 필요
+// .NET 6.0 버전이 필요합니다
 
 static class Director {
 	private static StringBuilder log = new StringBuilder();
@@ -28,8 +29,9 @@ static class Director {
 		
 		Stopwatch stopwatch = Stopwatch.StartNew();
 		
-		//await AnalysisAllFromWeb();
-		await AnalysisAllFromJson();
+		await AnalysisAllFromWeb();
+		//await AnalysisAllFromJson();
+		AnalysisHelper.AddSectionOnLog(Companies);
 		
 		log.AppendLine($"분석 소요시간: {(double)stopwatch.ElapsedMilliseconds / 1000}s");
 		
