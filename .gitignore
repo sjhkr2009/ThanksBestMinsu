@@ -1,3 +1,10 @@
 .idea/
-project/bin/
-project/obj/
+.vs/
+*/.idea/
+*/.vs/
+
+*/bin/
+*/obj/
+*/*/bin/
+*/*/obj/
+
