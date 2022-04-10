@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;	
 using OpenQA.Selenium.Chrome;	
@@ -115,8 +116,10 @@ public static class Director {
 		
 		var json = File.ReadAllText(SavePath("json", "data"));
 		List<Company> targets = JsonConvert.DeserializeObject<List<Company>>(json);
-
+		progressMax = targets.Count;
+		
 		foreach (var company in targets) {
+			AnalysisHelper.ShowMessage($"분석 중... ({Companies.Count + 1} / {progressMax})\n");
 			Companies.Add(company.AnalysisAll());
 			log.AppendLine();
 
@@ -219,7 +222,28 @@ public static class Director {
 			var company = Companies[i];
 			output.AppendLine($"[{i + 1}위] {company.CompanyName} ({company.Code:000000}) : " +
 			                  $"{(company.RecommendPoint - company.WarningPoint)}점 " +
-			                  $"({company.RecommendPoint} - {company.WarningPoint})");
+			                  $"({company.RecommendPoint} - {company.WarningPoint})" +
+			                  (string.IsNullOrEmpty(company.Section) ? string.Empty : $" - {company.Section}"));
+		}
+
+		Dictionary<string, List<Company>> sections = new Dictionary<string, List<Company>>();
+		foreach (var company in Companies) {
+			if (string.IsNullOrEmpty(company.Section)) continue;
+			
+			if (sections.TryGetValue(company.Section, out var list)) list.Add(company);
+			else sections.Add(company.Section, new List<Company>() {company});
+		}
+
+		foreach (var section in sections) {
+			if (section.Value.Count < 10) continue;
+			output.AppendLine("\n---------------------------------------------------");
+			output.AppendLine($"업종별 순위 - {section.Key}");
+			for (int i = 0; i < section.Value.Count; i++) {
+				var company = section.Value[i];
+				output.AppendLine($"[{i + 1}위] {company.CompanyName} ({company.Code:000000}) : " +
+				                  $"{(company.RecommendPoint - company.WarningPoint)}점 " +
+				                  $"({company.RecommendPoint} - {company.WarningPoint})");
+			}
 		}
 		
 		File.WriteAllText(SavePath("txt", "result"), output.ToString());

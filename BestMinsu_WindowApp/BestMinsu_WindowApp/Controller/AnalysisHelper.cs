@@ -26,7 +26,7 @@ public static class AnalysisHelper {
     public static Company AddPenalty(this Company company, int point, string reason) {
         string msg = $"-{point} | {reason}";
         Logger?.AppendLine(msg);
-        AddMessage(msg);
+        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromWeb) AddMessage(msg);
         company.WarningPoint += Math.Max(0, point);
         return company;
     }
@@ -34,7 +34,7 @@ public static class AnalysisHelper {
     public static Company AddRecommend(this Company company, int point, string reason) {
         string msg = $"+{point} | {reason}";
         Logger?.AppendLine(msg);
-        AddMessage(msg);
+        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromWeb) AddMessage(msg);
         company.RecommendPoint += Math.Max(0, point);
         return company;
     }
@@ -153,6 +153,10 @@ public static class AnalysisHelper {
 				perCount++;
 				perAvg += latestPer;
 				latestPer = (float) cur.Per;
+			}
+
+			if (isExpected && cur.GrossProfit == null) {
+				company.AddPenalty(20, "올해 예상 영업이익이 아직 나오지 않았습니다.");
 			}
 
 			if (i > 0 && cur.GrossProfit is > 0 && prev.GrossProfit != null) {

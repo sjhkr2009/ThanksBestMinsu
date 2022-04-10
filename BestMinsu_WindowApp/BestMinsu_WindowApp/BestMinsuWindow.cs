@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace BestMinsu_WindowApp {
     public partial class BestMinsuWindow : Form {
+	    private BackgroundWorker directorRun;
         public BestMinsuWindow() {
             InitializeComponent();
             Director.Initialize(richTextBox1);
@@ -22,7 +23,7 @@ namespace BestMinsu_WindowApp {
 		private void radioButton2_CheckedChanged(object sender, EventArgs e) {
 			Director.CurrentRunMode = Director.RunMode.AnalysisFromJson;
 		}
-
+		
 		private void button1_Click(object sender, EventArgs e) {
 			button1.Enabled = false;
 			button2.Enabled = true;
