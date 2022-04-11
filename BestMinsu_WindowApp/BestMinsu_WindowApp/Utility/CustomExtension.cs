@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 public static class CustomExtension {
@@ -54,5 +55,13 @@ public static class CustomExtension {
         if (origin < min) return min;
         if (origin > max) return max;
         return origin;
+    }
+
+    public static void SortByCompanyPoint(this List<Company> list) {
+        list.Sort((c1, c2) => {
+            int score1 = c1.RecommendPoint - c1.WarningPoint;
+            int score2 = c2.RecommendPoint - c2.WarningPoint;
+            return score2 - score1;
+        });
     }
 }

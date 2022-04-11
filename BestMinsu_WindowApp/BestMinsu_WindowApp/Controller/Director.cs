@@ -20,20 +20,14 @@ using OpenQA.Selenium.DevTools.V85.Debugger;
 
 public static class Director {
 	private static StringBuilder log = new StringBuilder();
-	private static StringBuilder output = new StringBuilder();
 	public static Control logDrawer;
-
-	private static string SavePath(string extension, string filename = "", string rootfilename = "AnalysisOutput")
-		=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-			$"{rootfilename}{(string.IsNullOrEmpty(filename) ? "" : "_")}{filename}.{extension}");
 
 	private static readonly List<Company> Companies = new List<Company>();
 	
 	private static List<Company> CachedCompanies = new List<Company>();
 	private static string CachedLog = string.Empty;
 
-	public enum RunMode
-	{
+	public enum RunMode {
 		AnalysisFromWeb,
 		AnalysisFromJson
 	}
@@ -114,8 +108,10 @@ public static class Director {
 		Stopwatch s = Stopwatch.StartNew();
 		long prevElapsedTime = 0;
 		
-		var json = File.ReadAllText(SavePath("json", "data"));
+		var json = File.ReadAllText(SaveHelper.GetPath(SaveHelper.Type.JsonData));
 		List<Company> targets = JsonConvert.DeserializeObject<List<Company>>(json);
+		
+		Companies.Clear();
 		progressMax = targets.Count;
 		
 		foreach (var company in targets) {
@@ -210,44 +206,9 @@ public static class Director {
 	/// Companies의 종목들을 json 파일로 저장하고, 높은 점수 순으로 정렬한 output 및 로그를 저장합니다.
 	/// </summary>
 	static void ExtractLogToFile() {
-		var resultJson = JsonConvert.SerializeObject(Companies, Formatting.Indented);
-
-		Companies.Sort((c1, c2) => {
-			int score1 = c1.RecommendPoint - c1.WarningPoint;
-			int score2 = c2.RecommendPoint - c2.WarningPoint;
-			return score2 - score1;
-		});
-
-		for (int i = 0; i < Companies.Count; i++) {
-			var company = Companies[i];
-			output.AppendLine($"[{i + 1}위] {company.CompanyName} ({company.Code:000000}) : " +
-			                  $"{(company.RecommendPoint - company.WarningPoint)}점 " +
-			                  $"({company.RecommendPoint} - {company.WarningPoint})" +
-			                  (string.IsNullOrEmpty(company.Section) ? string.Empty : $" - {company.Section}"));
-		}
-
-		Dictionary<string, List<Company>> sections = new Dictionary<string, List<Company>>();
-		foreach (var company in Companies) {
-			if (string.IsNullOrEmpty(company.Section)) continue;
-			
-			if (sections.TryGetValue(company.Section, out var list)) list.Add(company);
-			else sections.Add(company.Section, new List<Company>() {company});
-		}
-
-		foreach (var section in sections) {
-			if (section.Value.Count < 10) continue;
-			output.AppendLine("\n---------------------------------------------------");
-			output.AppendLine($"업종별 순위 - {section.Key}");
-			for (int i = 0; i < section.Value.Count; i++) {
-				var company = section.Value[i];
-				output.AppendLine($"[{i + 1}위] {company.CompanyName} ({company.Code:000000}) : " +
-				                  $"{(company.RecommendPoint - company.WarningPoint)}점 " +
-				                  $"({company.RecommendPoint} - {company.WarningPoint})");
-			}
-		}
-		
-		File.WriteAllText(SavePath("txt", "result"), output.ToString());
-		File.WriteAllText(SavePath("txt", "log"), log.ToString());
-		File.WriteAllText(SavePath("json", "data"), resultJson);
+		SaveHelper.SaveLog(log);
+		SaveHelper.SaveToJson(Companies);
+		SaveHelper.SaveToTextFile(Companies);
+		SaveHelper.SaveToCsv(Companies);
 	}
 }
