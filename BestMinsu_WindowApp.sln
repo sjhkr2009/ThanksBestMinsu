@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BestMinsu_WindowApp", "BestMinsu_WindowApp\BestMinsu_WindowApp.csproj", "{7F37BA3A-38BF-4A83-8576-53378789CE23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BestMinsu_WindowApp", "project\BestMinsu_WindowApp.csproj", "{7F37BA3A-38BF-4A83-8576-53378789CE23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
