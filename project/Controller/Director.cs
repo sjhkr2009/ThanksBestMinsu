@@ -45,7 +45,7 @@ public static class Director {
 	private static int failCount = 0;
 	private static readonly Queue<int> targetQueue = new Queue<int>();
 	
-	public static async Task Run(Action onComplete = null) {
+	public static void Run(Action onComplete = null) {
 		if (RunningCount > 0) return;
 		OnStart();
 
@@ -58,6 +58,9 @@ public static class Director {
 				AnalysisHelper.AddSectionOnLog(Companies);
 				log.AppendLine($"분석 소요시간: {(double)stopwatch.ElapsedMilliseconds / 1000}s");
 				ExtractLogToFile();
+
+				AnalysisHelper.ShowMessage($"분석이 완료되었습니다.\n" +
+				                           $"분석 소요시간: {(double)stopwatch.ElapsedMilliseconds / 1000:0.0}초");
 
 				stopwatch.Stop();
 			})
@@ -149,6 +152,7 @@ public static class Director {
 	/// </summary>
 	static async Task AnalysisAllFromWeb(int[] targets = null) {
 		targets ??= TargetData.AllListedCompanies;
+		AnalysisHelper.ShowMessage("크롬을 백그라운드에서 실행하는 중입니다.\n잠시만 기다려주세요.");
 		InitBeforeEnterWeb(targets);
 		
 		await AnalysisFromWeb();
@@ -168,9 +172,17 @@ public static class Director {
 	}
 
 	static async UniTask AnalysisFromWeb() {
-		using IWebDriver driver = new ChromeDriver();
-		RunningCount++;
+		// 명령 프롬프트 창을 숨긴다.
+		var chromeDriverService = ChromeDriverService.CreateDefaultService();
+		chromeDriverService.HideCommandPromptWindow = true;
 		
+		// 크롬 창을 숨기고 백그라운드에서 실행한다.
+		var option = new ChromeOptions();
+		option.AddArgument("headless");
+
+		using IWebDriver driver = new ChromeDriver(chromeDriverService, option);
+		RunningCount++;
+
 		// 대기 설정. (find로 객체를 찾을 때까지 검색이 되지 않으면 대기하는 시간, 초단위)
 		driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
 
@@ -199,6 +211,7 @@ public static class Director {
 		catch (Exception) { }
 		finally {
 			RunningCount--;
+			driver.Quit();
 		}
 	}
 	
