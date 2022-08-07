@@ -136,9 +136,11 @@ public static class Director {
 	}
 
 	static async Task AnalysisAllFromWebMultiTask(int windowCount, int[] targets = null) {
+		AnalysisHelper.ShowMessage("크롬을 백그라운드에서 실행하는 중입니다.\n잠시만 기다려주세요.");
+		
 		targets ??= TargetData.AllListedCompanies;
 		InitBeforeEnterWeb(targets);
-		
+
 		UniTask[] tasks = new UniTask[windowCount];
 		for (int i = 0; i < windowCount; i++) {
 			tasks[i] = AnalysisFromWeb();
@@ -152,7 +154,6 @@ public static class Director {
 	/// </summary>
 	static async Task AnalysisAllFromWeb(int[] targets = null) {
 		targets ??= TargetData.AllListedCompanies;
-		AnalysisHelper.ShowMessage("크롬을 백그라운드에서 실행하는 중입니다.\n잠시만 기다려주세요.");
 		InitBeforeEnterWeb(targets);
 		
 		await AnalysisFromWeb();
