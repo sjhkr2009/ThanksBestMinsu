@@ -10,7 +10,6 @@ using System.Windows.Forms;
 
 namespace BestMinsu_WindowApp {
     public partial class BestMinsuWindow : Form {
-	    private BackgroundWorker directorRun;
         public BestMinsuWindow() {
             InitializeComponent();
             Director.Initialize(richTextBox1);
