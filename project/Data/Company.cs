@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenQA.Selenium;
+using Yahoo.Finance;
 
 [Serializable]
 public class Company {
@@ -36,6 +37,7 @@ public class Company {
         var ret = new Company();
         
         driver.GoTo(code);
+        
         
         ret.LastUpdateTime = DateTime.Now;
 
