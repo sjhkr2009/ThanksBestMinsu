@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;	
 using OpenQA.Selenium.Chrome;	
 using OpenQA.Selenium;
 using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using OpenQA.Selenium.DevTools.V85.Debugger;
 
-// 실행 파일 위치에 현재 기기에 설치된 크롬 버전에 맞는 chromedriver.exe 필요
+// 실행 파일 위치에 chromedriver.exe 필요
 // .NET 6.0 버전이 필요합니다
 
 public static class Director {
@@ -23,7 +20,8 @@ public static class Director {
 	public static Control logDrawer;
 
 	private static readonly List<Company> Companies = new List<Company>();
-	
+	private static readonly LinkedList<IWebDriver> RunningDrivers = new LinkedList<IWebDriver>();
+
 	private static List<Company> CachedCompanies = new List<Company>();
 	private static string CachedLog = string.Empty;
 
@@ -38,8 +36,8 @@ public static class Director {
 		AnalysisHelper.LogDrawer = logDrawer;
 	}
 
-	public static int RunningCount { get; private set; } = 0;
-	public static bool RequestCancel { get; set; } = false;
+	private static int RunningCount { get; set; } = 0;
+	private static bool RequestCancel { get; set; } = false;
 
 	private static int progressMax = 0;
 	private static int failCount = 0;
@@ -50,6 +48,11 @@ public static class Director {
 		OnStart();
 
 		Stopwatch stopwatch = Stopwatch.StartNew();
+
+		if (!CheckDriver()) {
+			onComplete?.Invoke();
+			return;
+		}
 
 		Thread task = new Thread(() => {});
 		Thread waitOnComplete = new Thread(() => WaitRun(() => {
@@ -76,6 +79,19 @@ public static class Director {
 		waitOnComplete.Start();
 	}
 
+	static bool CheckDriver() {
+		try {
+			AnalysisHelper.ShowMessage("크롬 드라이버가 최신인지 확인 중...");
+			var path = Path.Combine(Directory.GetCurrentDirectory(), "chromedriver.exe");
+			new ChromeDriverUpdater.ChromeDriverUpdater().Update(path);
+			return true;
+		} catch (Exception e) {
+			AnalysisHelper.ShowMessage("에러가 발생했습니다.\n" +
+			                           $"[{e.GetType().Name}] {e.Message}");
+			return false;
+		}
+	}
+
 	static async Task WaitRun(Action onComplete) {
 		while (RunningCount == 0) {
 			await UniTask.Yield();
@@ -98,7 +114,28 @@ public static class Director {
 		onComplete?.Invoke();
 	}
 
+	public static async void Stop() {
+		RequestCancel = true;
+		AnalysisHelper.ShowMessage("중단 중...");
+		await Task.Delay(3000);
+		ClearDrivers();
+	}
+
+	static void ClearDrivers() {
+		if (RunningDrivers.Count == 0) return;
+		
+		if (RunningDrivers.Count > 0) {
+			AnalysisHelper.ShowMessage($"{RunningDrivers.Count}개의 작동중인 드라이버를 정리하는 중입니다...");
+		}
+		foreach (var driver in RunningDrivers) {
+			driver?.Quit();
+			driver?.Dispose();
+		}
+		RunningDrivers.Clear();
+	}
+
 	static void OnStart() {
+		RequestCancel = false;
 		log.Clear();
 		AnalysisHelper.Initialize(log);
 	}
@@ -147,6 +184,8 @@ public static class Director {
 		}
 
 		await UniTask.WhenAll(tasks);
+		
+		ClearDrivers();
 	}
 	
 	/// <summary>
@@ -180,8 +219,11 @@ public static class Director {
 		// 크롬 창을 숨기고 백그라운드에서 실행한다.
 		var option = new ChromeOptions();
 		option.AddArgument("headless");
-
-		using IWebDriver driver = new ChromeDriver(chromeDriverService, option);
+		
+		if (RequestCancel) return;
+		
+		IWebDriver driver = new ChromeDriver(chromeDriverService, option);
+		RunningDrivers.AddLast(driver);
 		RunningCount++;
 
 		// 대기 설정. (find로 객체를 찾을 때까지 검색이 되지 않으면 대기하는 시간, 초단위)
@@ -212,6 +254,7 @@ public static class Director {
 		catch (Exception) { }
 		finally {
 			RunningCount--;
+			RunningDrivers.Remove(driver);
 			driver.Quit();
 		}
 	}

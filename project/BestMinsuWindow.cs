@@ -36,7 +36,7 @@ namespace BestMinsu_WindowApp {
 			var ret = MessageBox.Show("분석을 취소합니다. 현재까지의 분석결과는 저장되지만 나중에 재시도할 때는 처음부터 다시 분석해야 합니다.", "ㄹㅇ?", MessageBoxButtons.OKCancel);
 
 			if (ret == DialogResult.OK) {
-				Director.RequestCancel = true;
+				Director.Stop();
 			}
 		}
     }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenQA.Selenium;
-using Yahoo.Finance;
 
 [Serializable]
 public class Company {
