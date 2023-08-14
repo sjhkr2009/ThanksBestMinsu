@@ -6,10 +6,12 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Cysharp.Threading.Tasks;
+using DevNet;
 using Newtonsoft.Json;
 
 // 실행 파일 위치에 chromedriver.exe 필요
@@ -82,8 +84,9 @@ public static class Director {
 	static bool CheckDriver() {
 		try {
 			AnalysisHelper.ShowMessage("크롬 드라이버가 최신인지 확인 중...");
-			var path = Path.Combine(Directory.GetCurrentDirectory(), "chromedriver.exe");
-			new ChromeDriverUpdater.ChromeDriverUpdater().Update(path);
+			//var path = Path.Combine(Directory.GetCurrentDirectory(), "chromedriver.exe");
+			//new ChromeDriverUpdater.ChromeDriverUpdater().Update(path);
+			ChromeDriverManager.InstallLatest();
 			return true;
 		} catch (Exception e) {
 			AnalysisHelper.ShowMessage("에러가 발생했습니다.\n" +
