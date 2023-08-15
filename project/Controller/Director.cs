@@ -14,9 +14,7 @@ using Cysharp.Threading.Tasks;
 using DevNet;
 using Newtonsoft.Json;
 
-// 실행 파일 위치에 chromedriver.exe 필요
 // .NET 6.0 버전이 필요합니다
-
 public static class Director {
 	private static StringBuilder log = new StringBuilder();
 	public static Control logDrawer;
@@ -47,7 +45,13 @@ public static class Director {
 	
 	public static void Run(Action onComplete = null) {
 		if (RunningCount > 0) return;
+		
 		OnStart();
+
+		if (!QuestionHelper.CheckQuestion()) {
+			onComplete?.Invoke();
+			return;
+		}
 
 		Stopwatch stopwatch = Stopwatch.StartNew();
 

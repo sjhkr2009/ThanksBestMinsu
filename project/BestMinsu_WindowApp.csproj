@@ -90,6 +90,7 @@
     <Compile Include="BestMinsuWindow.Designer.cs">
       <DependentUpon>BestMinsuWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controller\QuestionHelper.cs" />
     <Compile Include="Controller\SaveHelper.cs" />
     <Compile Include="Data\Company.cs" />
     <Compile Include="Utility\CustomExtension.cs" />
