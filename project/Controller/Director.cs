@@ -76,7 +76,7 @@ public static class Director {
 		);
 
 		if (CurrentRunMode == RunMode.AnalysisFromWeb) {
-			task = new Thread(() => AnalysisAllFromWebMultiTask(10));
+			task = new Thread(() => AnalysisAllFromWebMultiTask(1));
 		} if (CurrentRunMode == RunMode.AnalysisFromJson) {
 			task = new Thread(() => AnalysisAllFromJson());
 		}
@@ -88,7 +88,8 @@ public static class Director {
 	static bool CheckDriver() {
 		try {
 			AnalysisHelper.ShowMessage("크롬 드라이버가 최신인지 확인 중...");
-			//var path = Path.Combine(Directory.GetCurrentDirectory(), "chromedriver.exe");
+			var path = Path.Combine(Directory.GetCurrentDirectory(), "chromedriver.exe");
+			File.Delete(path);
 			//new ChromeDriverUpdater.ChromeDriverUpdater().Update(path);
 			ChromeDriverManager.InstallLatest();
 			return true;
@@ -225,7 +226,7 @@ public static class Director {
 		
 		// 크롬 창을 숨기고 백그라운드에서 실행한다.
 		var option = new ChromeOptions();
-		option.AddArgument("headless");
+		option.AddArgument("--headless");
 		
 		if (RequestCancel) return;
 		
