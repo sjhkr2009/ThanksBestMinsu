@@ -62,7 +62,7 @@
 	        this.radioButton1.Size = new System.Drawing.Size(174, 36);
 	        this.radioButton1.TabIndex = 2;
 	        this.radioButton1.TabStop = true;
-	        this.radioButton1.Text = "웹에서 탐색";
+	        this.radioButton1.Text = "싱글 스레드로 실행";
 	        this.radioButton1.UseVisualStyleBackColor = true;
 	        this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
 	        // 
@@ -74,7 +74,7 @@
 	        this.radioButton2.Name = "radioButton2";
 	        this.radioButton2.Size = new System.Drawing.Size(253, 36);
 	        this.radioButton2.TabIndex = 3;
-	        this.radioButton2.Text = "Json 파일에서 탐색";
+	        this.radioButton2.Text = "멀티 스레드 사용";
 	        this.radioButton2.UseVisualStyleBackColor = true;
 	        this.radioButton2.CheckedChanged += new System.EventHandler(this.radioButton2_CheckedChanged);
 	        // 

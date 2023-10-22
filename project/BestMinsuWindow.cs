@@ -16,11 +16,11 @@ namespace BestMinsu_WindowApp {
         }
 
 		private void radioButton1_CheckedChanged(object sender, EventArgs e) {
-			Director.CurrentRunMode = Director.RunMode.AnalysisFromWeb;
+			Director.CurrentRunMode = Director.RunMode.AnalysisFromSingleMode;
 		}
 
 		private void radioButton2_CheckedChanged(object sender, EventArgs e) {
-			Director.CurrentRunMode = Director.RunMode.AnalysisFromJson;
+			Director.CurrentRunMode = Director.RunMode.AnalysisFromMultiMode;
 		}
 		
 		private void button1_Click(object sender, EventArgs e) {

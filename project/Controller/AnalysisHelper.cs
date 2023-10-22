@@ -26,7 +26,7 @@ public static class AnalysisHelper {
     public static Company AddPenalty(this Company company, int point, string reason) {
         string msg = $"-{point} | {reason}";
         Logger?.AppendLine(msg);
-        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromWeb) AddMessage(msg);
+        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromSingleMode) AddMessage(msg);
         company.WarningPoint += Math.Max(0, point);
         return company;
     }
@@ -34,7 +34,7 @@ public static class AnalysisHelper {
     public static Company AddRecommend(this Company company, int point, string reason) {
         string msg = $"+{point} | {reason}";
         Logger?.AppendLine(msg);
-        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromWeb) AddMessage(msg);
+        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromSingleMode) AddMessage(msg);
         company.RecommendPoint += Math.Max(0, point);
         return company;
     }

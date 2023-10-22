@@ -26,10 +26,10 @@ public static class Director {
 	private static string CachedLog = string.Empty;
 
 	public enum RunMode {
-		AnalysisFromWeb,
-		AnalysisFromJson
+		AnalysisFromSingleMode,
+		AnalysisFromMultiMode
 	}
-	public static RunMode CurrentRunMode = RunMode.AnalysisFromWeb;
+	public static RunMode CurrentRunMode = RunMode.AnalysisFromSingleMode;
 
 	public static void Initialize(Control logger) {
 		logDrawer = logger;
@@ -54,11 +54,11 @@ public static class Director {
 		}
 
 		Stopwatch stopwatch = Stopwatch.StartNew();
-
+/* Deprecated
 		if (!CheckDriver()) {
 			onComplete?.Invoke();
 			return;
-		}
+		}*/
 
 		Thread task = new Thread(() => {});
 		Thread waitOnComplete = new Thread(() => WaitRun(() => {
@@ -75,16 +75,16 @@ public static class Director {
 			})
 		);
 
-		if (CurrentRunMode == RunMode.AnalysisFromWeb) {
+		if (CurrentRunMode == RunMode.AnalysisFromSingleMode) {
 			task = new Thread(() => AnalysisAllFromWebMultiTask(1));
-		} if (CurrentRunMode == RunMode.AnalysisFromJson) {
-			task = new Thread(() => AnalysisAllFromJson());
+		} if (CurrentRunMode == RunMode.AnalysisFromMultiMode) {
+			task = new Thread(() => AnalysisAllFromWebMultiTask(10));
 		}
 		
 		task.Start();
 		waitOnComplete.Start();
 	}
-
+	[Obsolete("최신 버전의 Selenium에서는 드라이버 불필요하며, 구버전에서도 ChromeDriverManager가 더 이상 지원되지 않음")]
 	static bool CheckDriver() {
 		try {
 			AnalysisHelper.ShowMessage("크롬 드라이버가 최신인지 확인 중...");
