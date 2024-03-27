@@ -29,7 +29,7 @@ public static class Director {
 		AnalysisFromSingleMode,
 		AnalysisFromMultiMode
 	}
-	public static RunMode CurrentRunMode = RunMode.AnalysisFromSingleMode;
+	public static RunMode CurrentRunMode = RunMode.AnalysisFromMultiMode;
 
 	public static void Initialize(Control logger) {
 		logDrawer = logger;
