@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -39,5 +40,45 @@ namespace BestMinsu_WindowApp {
 				Director.Stop();
 			}
 		}
-    }
+
+		private void button3_Click(object sender, EventArgs e)
+		{
+			
+		}
+
+		private void button4_Click(object sender, EventArgs e)
+		{
+			
+		}
+		
+		private void buttonSelectFile1_Click(object sender, EventArgs e)
+		{
+			using (OpenFileDialog openFileDialog = new OpenFileDialog())
+			{
+				openFileDialog.InitialDirectory = "C:\\";
+				openFileDialog.Filter = "JSON 파일 (*.json)|*.json";
+				openFileDialog.FilterIndex = 1;
+				if (openFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					string filePath = openFileDialog.FileName;
+					File.ReadAllText(filePath); // TODO: 파일1 -> Company로 변환 후 저장
+				}
+			}
+		}
+		
+		private void buttonSelectFile2_Click(object sender, EventArgs e)
+		{
+			using (OpenFileDialog openFileDialog = new OpenFileDialog())
+			{
+				openFileDialog.InitialDirectory = "C:\\";
+				openFileDialog.Filter = "JSON 파일 (*.json)|*.json";
+				openFileDialog.FilterIndex = 1;
+				if (openFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					string filePath = openFileDialog.FileName;
+					File.ReadAllText(filePath); // TODO: 파일2 -> Company로 변환 후 저장
+				}
+			}
+		}
+	}
 }
