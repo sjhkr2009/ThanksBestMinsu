@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 
 [Serializable]
@@ -24,11 +25,13 @@ public class Company {
     public int WarningPoint;
     public int RecommendPoint;
 
-    [NonSerialized] private const int YearInfoCount = 4;
-    [NonSerialized] private const int QuarterInfoCount = 5;
+    [NonSerialized, JsonIgnore] private const int YearInfoCount = 4;
+    [NonSerialized, JsonIgnore] private const int QuarterInfoCount = 5;
 
     public Performance[] YearPerformances = new Performance[YearInfoCount];
     public Performance[] QuarterPerformances = new Performance[QuarterInfoCount];
+
+    [JsonIgnore] public string AnalysisLog { get; set; } = string.Empty;
 
     private Company() { }
 

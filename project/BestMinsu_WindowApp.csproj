@@ -93,11 +93,13 @@
     <Compile Include="BestMinsuWindow.Designer.cs">
       <DependentUpon>BestMinsuWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controller\UiHelper.cs" />
     <Compile Include="Controller\QuestionHelper.cs" />
     <Compile Include="Controller\SaveHelper.cs" />
     <Compile Include="Data\Company.cs" />
+    <Compile Include="Director\AnalysisTabDirector.cs" />
+    <Compile Include="Director\CompareTabDirector.cs" />
     <Compile Include="Utility\CustomExtension.cs" />
-    <Compile Include="Controller\Director.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controller\SelectorHelper.cs" />

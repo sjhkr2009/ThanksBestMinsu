@@ -15,9 +15,8 @@ using DevNet;
 using Newtonsoft.Json;
 
 // .NET 6.0 버전이 필요합니다
-public static class Director {
+public static class AnalysisTabDirector {
 	private static StringBuilder log = new StringBuilder();
-	public static Control logDrawer;
 
 	private static readonly List<Company> Companies = new List<Company>();
 	private static readonly LinkedList<IWebDriver> RunningDrivers = new LinkedList<IWebDriver>();
@@ -30,11 +29,6 @@ public static class Director {
 		AnalysisFromMultiMode
 	}
 	public static RunMode CurrentRunMode = RunMode.AnalysisFromMultiMode;
-
-	public static void Initialize(Control logger) {
-		logDrawer = logger;
-		AnalysisHelper.LogDrawer = logDrawer;
-	}
 
 	private static int RunningCount { get; set; } = 0;
 	private static bool RequestCancel { get; set; } = false;
@@ -54,11 +48,6 @@ public static class Director {
 		}
 
 		Stopwatch stopwatch = Stopwatch.StartNew();
-/* Deprecated
-		if (!CheckDriver()) {
-			onComplete?.Invoke();
-			return;
-		}*/
 
 		Thread task = new Thread(() => {});
 		Thread waitOnComplete = new Thread(() => WaitRun(() => {
@@ -68,7 +57,7 @@ public static class Director {
 				log.AppendLine($"분석 소요시간: {(double)stopwatch.ElapsedMilliseconds / 1000}s");
 				ExtractLogToFile();
 
-				AnalysisHelper.ShowMessage($"분석이 완료되었습니다.\n" +
+				UiHelper.ShowLog($"분석이 완료되었습니다.\n" +
 				                           $"분석 소요시간: {(double)stopwatch.ElapsedMilliseconds / 1000:0.0}초");
 
 				stopwatch.Stop();
@@ -84,21 +73,6 @@ public static class Director {
 		task.Start();
 		waitOnComplete.Start();
 	}
-	[Obsolete("최신 버전의 Selenium에서는 드라이버 불필요하며, 구버전에서도 ChromeDriverManager가 더 이상 지원되지 않음")]
-	static bool CheckDriver() {
-		try {
-			AnalysisHelper.ShowMessage("크롬 드라이버가 최신인지 확인 중...");
-			var path = Path.Combine(Directory.GetCurrentDirectory(), "chromedriver.exe");
-			File.Delete(path);
-			//new ChromeDriverUpdater.ChromeDriverUpdater().Update(path);
-			ChromeDriverManager.InstallLatest();
-			return true;
-		} catch (Exception e) {
-			AnalysisHelper.ShowMessage("에러가 발생했습니다.\n" +
-			                           $"[{e.GetType().Name}] {e.Message}");
-			return false;
-		}
-	}
 
 	static async Task WaitRun(Action onComplete) {
 		while (RunningCount == 0) {
@@ -109,22 +83,28 @@ public static class Director {
 			
 			if (RequestCancel) {
 				await Task.Delay(1000);
-				AnalysisHelper.ShowMessage("취소 중...");
-				await Task.Delay(3000);
-
+				UiHelper.ShowLog("취소 중...");
+				await Task.Delay(1000);
+				
+				while (RunningCount > 0) {
+					UiHelper.ShowLog($"백그라운드 창 닫는 중... ({RunningCount}개)");
+					await Task.Delay(1000);
+				}
+				
 				CachedCompanies = Companies.ToList();
 				CachedLog = log.ToString();
 				break;
 			}
 		}
 
+		UiHelper.ShowLog("완료되었습니다");
 		RequestCancel = false;
 		onComplete?.Invoke();
 	}
 
 	public static async void Stop() {
 		RequestCancel = true;
-		AnalysisHelper.ShowMessage("중단 중...");
+		UiHelper.ShowLog("중단 중...");
 		await Task.Delay(3000);
 		ClearDrivers();
 	}
@@ -133,7 +113,7 @@ public static class Director {
 		if (RunningDrivers.Count == 0) return;
 		
 		if (RunningDrivers.Count > 0) {
-			AnalysisHelper.ShowMessage($"{RunningDrivers.Count}개의 작동중인 드라이버를 정리하는 중입니다...");
+			UiHelper.ShowLog($"{RunningDrivers.Count}개의 작동중인 드라이버를 정리하는 중입니다...");
 		}
 		foreach (var driver in RunningDrivers) {
 			driver?.Quit();
@@ -163,8 +143,9 @@ public static class Director {
 		progressMax = targets.Count;
 		
 		foreach (var company in targets) {
-			AnalysisHelper.ShowMessage($"분석 중... ({Companies.Count + 1} / {progressMax})\n");
+			UiHelper.ShowLog($"분석 중... ({Companies.Count + 1} / {progressMax})\n");
 			Companies.Add(company.AnalysisAll());
+			UiHelper.AddLog(company.AnalysisLog);
 			log.AppendLine();
 
 			if (s.ElapsedMilliseconds - prevElapsedTime > 500) {
@@ -181,7 +162,7 @@ public static class Director {
 	}
 
 	static async Task AnalysisAllFromWebMultiTask(int windowCount, int[] targets = null) {
-		AnalysisHelper.ShowMessage("크롬을 백그라운드에서 실행하는 중입니다.\n잠시만 기다려주세요.");
+		UiHelper.ShowLog("크롬을 백그라운드에서 실행하는 중입니다.\n잠시만 기다려주세요.");
 		
 		targets ??= TargetData.AllListedCompanies;
 		InitBeforeEnterWeb(targets);
@@ -245,9 +226,11 @@ public static class Director {
 				try {
 					driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
 					var company = Company.CreateFromWeb(driver, target);
-					AnalysisHelper.ShowMessage($"분석 중... ({Companies.Count + failCount + 1} / {progressMax})\n");
-					AnalysisHelper.AddMessage($"{company.CompanyName}({company.Code:000000}) - {company.Section}\n");
+					UiHelper.ShowLog($"분석 중... ({Companies.Count + failCount + 1} / {progressMax})\n");
+					UiHelper.AddLog($"{company.CompanyName}({company.Code:000000}) - {company.Section}\n");
 					Companies.Add(company.AnalysisAll());
+					
+					UiHelper.AddLog(company.AnalysisLog);
 				}
 				catch (Exception e) {
 					log.AppendLine($"{target}을 분석하던 중 오류가 발생했습니다.");

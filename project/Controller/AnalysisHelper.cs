@@ -5,28 +5,15 @@ using System.Windows.Forms;
 
 public static class AnalysisHelper {
     public static StringBuilder Logger { get; private set; } = new StringBuilder();
-    public static Control LogDrawer { get; set; }
-
-    public static void ShowMessage(string msg)	{
-	    LogDrawer?.Invoke(new MethodInvoker(() => LogDrawer.Text = msg));
-    }
-
-    public static void AddMessage(string msg) {
-	    LogDrawer?.Invoke(new MethodInvoker(() => LogDrawer.Text += '\n' + msg));
-    }
 
     public static void Initialize(StringBuilder logger) {
         Logger = logger;
-        if (LogDrawer is TextBoxBase textBox) {
-	        textBox.ReadOnly = true;
-	        textBox.Text = string.Empty;
-        }
     }
 
     public static Company AddPenalty(this Company company, int point, string reason) {
         string msg = $"-{point} | {reason}";
         Logger?.AppendLine(msg);
-        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromSingleMode) AddMessage(msg);
+        company.AnalysisLog += $"\n{msg}";
         company.WarningPoint += Math.Max(0, point);
         return company;
     }
@@ -34,7 +21,7 @@ public static class AnalysisHelper {
     public static Company AddRecommend(this Company company, int point, string reason) {
         string msg = $"+{point} | {reason}";
         Logger?.AppendLine(msg);
-        if (Director.CurrentRunMode == Director.RunMode.AnalysisFromSingleMode) AddMessage(msg);
+        company.AnalysisLog += $"\n{msg}";
         company.RecommendPoint += Math.Max(0, point);
         return company;
     }
@@ -42,6 +29,7 @@ public static class AnalysisHelper {
     public static Company Clear(this Company company) {
         company.WarningPoint = 0;
         company.RecommendPoint = 0;
+        company.AnalysisLog = string.Empty; 
         return company;
     }
 

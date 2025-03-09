@@ -52,16 +52,16 @@
 			this.tabControl = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
+			this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+			this.richTextBox2 = new System.Windows.Forms.RichTextBox();
 
 			// 탭1 컨트롤 초기화
-			this.richTextBox1 = new System.Windows.Forms.RichTextBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.radioButton1 = new System.Windows.Forms.RadioButton();
 			this.radioButton2 = new System.Windows.Forms.RadioButton();
 			this.button2 = new System.Windows.Forms.Button();
 
 			// 탭2 컨트롤 초기화
-			this.richTextBox2 = new System.Windows.Forms.RichTextBox();
 			this.button3 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
 			this.buttonSelectFile1 = new System.Windows.Forms.Button();
@@ -109,17 +109,26 @@
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "데이터 비교";
 			this.tabPage2.UseVisualStyleBackColor = true;
-
+			
 			// 
-			// 탭1: richTextBox1
+			// 공통: richTextBox
 			// 
 			this.richTextBox1.Font = new System.Drawing.Font("맑은 고딕", 9F);
 			this.richTextBox1.Location = new System.Drawing.Point(35, 50);
-			this.richTextBox1.Name = "richTextBox1";
+			this.richTextBox1.Name = "richTextBox";
 			this.richTextBox1.ReadOnly = true;
 			this.richTextBox1.Size = new System.Drawing.Size(740, 596);
 			this.richTextBox1.TabIndex = 0;
 			this.richTextBox1.Text = "";
+			
+			this.richTextBox2.Font = new System.Drawing.Font("맑은 고딕", 9F);
+			this.richTextBox2.Location = new System.Drawing.Point(35, 50);
+			this.richTextBox2.Name = "richTextBox";
+			this.richTextBox2.ReadOnly = true;
+			this.richTextBox2.Size = new System.Drawing.Size(740, 596);
+			this.richTextBox2.TabIndex = 0;
+			this.richTextBox2.Text = "";
+			
 			// 
 			// 탭1: button1 ("분석 시작")
 			// 
@@ -169,17 +178,7 @@
 			this.button2.Text = "분석 중단";
 			this.button2.UseVisualStyleBackColor = true;
 			this.button2.Click += new System.EventHandler(this.button2_Click);
-
-			// 
-			// 탭2: richTextBox2 (탭1과 같은 위치)
-			// 
-			this.richTextBox2.Font = new System.Drawing.Font("맑은 고딕", 9F);
-			this.richTextBox2.Location = new System.Drawing.Point(35, 50);
-			this.richTextBox2.Name = "richTextBox2";
-			this.richTextBox2.ReadOnly = true;
-			this.richTextBox2.Size = new System.Drawing.Size(740, 596);
-			this.richTextBox2.TabIndex = 0;
-			this.richTextBox2.Text = "";
+			
 			// 
 			// 탭2: button3 ("분석 시작")
 			// 

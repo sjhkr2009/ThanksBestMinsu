@@ -40,12 +40,12 @@ public class TargetData : AnalysisTargetData {
 			catch (Exception ex)
 			{
 				MessageBox.Show("실행 파일 경로의 CSV 파일을 읽는 중 오류 발생. 기본 데이터를 사용합니다.\n" + ex.Message);
-				AnalysisHelper.ShowMessage("실행 파일 경로의 CSV 파일을 읽는 중 오류 발생. 기본 데이터를 사용합니다.\n" + ex.Message);
+				UiHelper.ShowLog("실행 파일 경로의 CSV 파일을 읽는 중 오류 발생. 기본 데이터를 사용합니다.\n" + ex.Message);
 			}
 		}
 		else
 		{
-			AnalysisHelper.ShowMessage("기본적으로 2025.03.08 기준의 모든 상장종목 데이터를 분석합니다.\n" +
+			UiHelper.ShowLog("기본적으로 2025.03.08 기준의 모든 상장종목 데이터를 분석합니다.\n" +
 				"파일 경로에 CompanyCodes.csv 이름의 상장종목코드가 있을 경우 해당 기업들을 대상으로 분석할 수 있습니다.");
 		}
 

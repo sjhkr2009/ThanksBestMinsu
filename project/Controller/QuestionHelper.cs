@@ -43,7 +43,7 @@ public class QuestionHelper {
             
             if (!isCorrect) {
                 MessageBox.Show("최고민수 퀴즈를 맞추지 못했습니다.");
-                AnalysisHelper.ShowMessage("최고민수 퀴즈를 통과해야 분석을 시작할 수 있습니다.");
+                UiHelper.ShowLog("최고민수 퀴즈를 통과해야 분석을 시작할 수 있습니다.");
                 return false;
             }
         }
