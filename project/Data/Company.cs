@@ -24,6 +24,8 @@ public class Company {
 
     public int WarningPoint;
     public int RecommendPoint;
+    
+    public int TotalScore => RecommendPoint - WarningPoint;
 
     [NonSerialized, JsonIgnore] private const int YearInfoCount = 4;
     [NonSerialized, JsonIgnore] private const int QuarterInfoCount = 5;

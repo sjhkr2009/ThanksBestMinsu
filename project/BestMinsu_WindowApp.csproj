@@ -97,8 +97,9 @@
     <Compile Include="Controller\QuestionHelper.cs" />
     <Compile Include="Controller\SaveHelper.cs" />
     <Compile Include="Data\Company.cs" />
-    <Compile Include="Director\AnalysisTabDirector.cs" />
-    <Compile Include="Director\CompareTabDirector.cs" />
+    <Compile Include="Data\CompareCompanyData.cs" />
+    <Compile Include="Director\AnalysisTabController.cs" />
+    <Compile Include="Director\CompareTabController.cs" />
     <Compile Include="Utility\CustomExtension.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

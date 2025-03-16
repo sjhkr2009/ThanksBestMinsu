@@ -10,15 +10,18 @@ public static class SaveHelper {
         TextResult,
         JsonData,
         TextFullLog,
-        CsvData
+        CsvData,
+        CompareData,
     }
 
-    public static string GetPath(Type type) {
+    public static string GetPath(Type type) => GetPath(type, DateTime.Now.ToString("yyMMdd_HHmmss"));
+    public static string GetPath(Type type, string _postfix) {
         string fileName = type switch {
-            Type.TextResult => "AnalysisOutput_result.txt",
-            Type.JsonData => "AnalysisOutput_data.json",
-            Type.TextFullLog => "AnalysisOutput_log.txt",
-            Type.CsvData => "AnalysisOutput_data.csv",
+            Type.TextResult => $"AnalysisOutput_result{_postfix}.txt",
+            Type.JsonData => $"AnalysisOutput_data{_postfix}.json",
+            Type.TextFullLog => $"AnalysisOutput_log{_postfix}.txt",
+            Type.CsvData => $"AnalysisOutput_data{_postfix}.csv",
+            Type.CompareData => $"CompareOutput_data{_postfix}.txt",
             _ => string.Empty
         };
         return Path.Combine(RootPath, fileName);
@@ -64,6 +67,19 @@ public static class SaveHelper {
         }
         
         File.WriteAllText(GetPath(Type.TextResult), output.ToString());
+    }
+
+    public static void SaveCompareData(string _header, List<CompareCompanyData> compareDatas) {
+        StringBuilder output = new StringBuilder();
+
+        output.AppendLine(_header);
+        
+        for (int i = 0; i < compareDatas.Count; i++) {
+            var compareData = compareDatas[i];
+            output.AppendLine($"[{i + 1}] {compareData}");
+        }
+        
+        File.WriteAllText(GetPath(Type.CompareData), output.ToString());
     }
 
     public static void SaveToCsv(List<Company> companies) {

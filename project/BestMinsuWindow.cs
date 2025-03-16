@@ -17,17 +17,17 @@ namespace BestMinsu_WindowApp {
         }
 
 		private void radioButton1_CheckedChanged(object sender, EventArgs e) {
-			AnalysisTabDirector.CurrentRunMode = AnalysisTabDirector.RunMode.AnalysisFromMultiMode;
+			AnalysisTabController.CurrentRunMode = AnalysisTabController.RunMode.AnalysisFromMultiMode;
 		}
 
 		private void radioButton2_CheckedChanged(object sender, EventArgs e) {
-			AnalysisTabDirector.CurrentRunMode = AnalysisTabDirector.RunMode.AnalysisFromSingleMode;
+			AnalysisTabController.CurrentRunMode = AnalysisTabController.RunMode.AnalysisFromSingleMode;
 		}
 		
 		private void button1_Click(object sender, EventArgs e) {
 			button1.Enabled = false;
 			button2.Enabled = true;
-			AnalysisTabDirector.Run(() => {
+			AnalysisTabController.Run(() => {
 				button1.Invoke(new MethodInvoker(() => button1.Enabled = true));
 				button2.Invoke(new MethodInvoker(() => button2.Enabled = false));
 			});
@@ -37,12 +37,12 @@ namespace BestMinsu_WindowApp {
 			var ret = MessageBox.Show("분석을 취소합니다. 현재까지의 분석결과는 저장되지만 나중에 재시도할 때는 처음부터 다시 분석해야 합니다.", "ㄹㅇ?", MessageBoxButtons.OKCancel);
 
 			if (ret == DialogResult.OK) {
-				AnalysisTabDirector.Stop();
+				AnalysisTabController.Stop();
 			}
 		}
 
 		private void button3_Click(object sender, EventArgs e) {
-			CompareTabDirector.StartCompare();
+			CompareTabController.StartCompare();
 		}
 
 		private void button4_Click(object sender, EventArgs e) {
@@ -74,12 +74,12 @@ namespace BestMinsu_WindowApp {
 		
 		private void buttonSelectFile1_Click(object sender, EventArgs e)
 		{
-			CompareTabDirector.SetDataA(SelectFile());
+			CompareTabController.SetDataA(SelectFile());
 		}
 		
 		private void buttonSelectFile2_Click(object sender, EventArgs e)
 		{
-			CompareTabDirector.SetDataB(SelectFile());
+			CompareTabController.SetDataB(SelectFile());
 		}
 	}
 }

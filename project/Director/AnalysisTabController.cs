@@ -14,8 +14,7 @@ using Cysharp.Threading.Tasks;
 using DevNet;
 using Newtonsoft.Json;
 
-// .NET 6.0 버전이 필요합니다
-public static class AnalysisTabDirector {
+public static class AnalysisTabController {
 	private static StringBuilder log = new StringBuilder();
 
 	private static readonly List<Company> Companies = new List<Company>();
