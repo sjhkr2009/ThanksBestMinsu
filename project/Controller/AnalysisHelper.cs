@@ -34,32 +34,33 @@ public static class AnalysisHelper {
     }
 
     public static Company AnalyzeMarketCap(this Company company) {
-        switch (company.MarketCap) {
-            case null:
-                return company.AddPenalty(1000, "시가총액 정보 없음");
-            case < 1000:
-                int point = (int)Math.Sqrt(1000 - (int) company.MarketCap); 
-                return company.AddPenalty(point, $"시가총액 낮음 ({company.MarketCap}억)");
-            case > 10000:
-                return company.AddRecommend(10, $"시가총액 높음: {company.MarketCap / 10000}조 {company.MarketCap % 10000}억");
+        var w = ScoreWeights.Current;
+        if (company.MarketCap == null)
+            return company.AddPenalty(w.NoMarketCapPenalty, "시가총액 정보 없음");
+        if (company.MarketCap < w.LowMarketCapThreshold) {
+            int point = (int)Math.Sqrt(w.LowMarketCapThreshold - (int)company.MarketCap);
+            return company.AddPenalty(point, $"시가총액 낮음 ({company.MarketCap}억)");
         }
+        if (company.MarketCap > w.HighMarketCapThreshold)
+            return company.AddRecommend(w.HighMarketCapRecommend, $"시가총액 높음: {company.MarketCap / 10000}조 {company.MarketCap % 10000}억");
 
         return company;
     }
 
     public static Company AnalyzePer(this Company company) {
-        if (company.Per == null) return company.AddPenalty(20, "PER 정보 없음 (당기순손실)");
+        if (company.Per == null) return company.AddPenalty(ScoreWeights.Current.NoPerPenalty, "PER 정보 없음 (당기순손실)");
 
         return company.SimilarCompanyPer == null ? company.AnalyzePerAbsolute() : company.AnalyzePerRelative();
     }
 
     private static Company AnalyzePerRelative(this Company company) {
+        var w = ScoreWeights.Current;
         if (company.Per == null || company.Per == 0 || company.SimilarCompanyPer == null) return company;
-        if (company.SimilarCompanyPer < 1f || company.SimilarCompanyPer > 30f) return company.AnalyzePerAbsolute();
+        if (company.SimilarCompanyPer < w.SimilarPerLowBound || company.SimilarCompanyPer > w.SimilarPerHighBound) return company.AnalyzePerAbsolute();
 
         float per = (float)company.Per;
         float otherPer = (float)company.SimilarCompanyPer;
-        int point = (int)per.CalculateDiffRate(otherPer, 10f, 30f);
+        int point = (int)per.CalculateDiffRate(otherPer, w.PerRelativeCoefficient, w.PerRelativeMax);
 
         return per > otherPer
             ? company.AddPenalty(point, $"PER 높음: {company.Per:0.0} > 동종업계 평균 {company.SimilarCompanyPer:0.0}")
@@ -67,11 +68,12 @@ public static class AnalysisHelper {
     }
 
     private static Company AnalyzePerAbsolute(this Company company) {
-        return company.Per switch {
-            > 30f => company.AddPenalty((int)company.Per.CalculateDiffRate(30f, 20f, 30f, 10f), $"PER 높음: {company.Per:0.0}"),
-            < 10f => company.AddRecommend(((int)((10f - company.Per) * 5)).Clamp(1, 30), $"PER 낮음: {company.Per:0.0}"),
-            _ => company
-        };
+        var w = ScoreWeights.Current;
+        if (company.Per > w.PerAbsoluteHighThreshold)
+            return company.AddPenalty((int)company.Per.CalculateDiffRate(w.PerAbsoluteHighThreshold, w.PerAbsoluteHighCoefficient, w.PerAbsoluteHighMax, w.PerAbsoluteHighMin), $"PER 높음: {company.Per:0.0}");
+        if (company.Per < w.PerAbsoluteLowThreshold)
+            return company.AddRecommend(((int)((w.PerAbsoluteLowThreshold - company.Per) * w.PerAbsoluteLowMultiplier)).Clamp(w.PerAbsoluteLowMin, w.PerAbsoluteLowMax), $"PER 낮음: {company.Per:0.0}");
+        return company;
     }
 
     public static Company AnalyzeExpectedPer(this Company company) {
@@ -81,11 +83,12 @@ public static class AnalysisHelper {
     }
 
     private static Company AnalyzeExpectedPerRelative(this Company company) {
+        var w = ScoreWeights.Current;
         if (company.ExpectedPer == null || company.Per == null) return company;
         
         float per = (float)company.Per;
         float expectPer = (float)company.ExpectedPer;
-        int point = (int)per.CalculateDiffRate(expectPer, 10f, 10f);
+        int point = (int)per.CalculateDiffRate(expectPer, w.ExpPerRelativeCoefficient, w.ExpPerRelativeMax);
 
         return per > expectPer
             ? company.AddRecommend(point, $"PER 개선: {company.Per:0.0} -> {company.ExpectedPer:0.0}")
@@ -93,25 +96,29 @@ public static class AnalysisHelper {
     }
     
     private static Company AnalyzeExpectedPerAbsolute(this Company company) {
-        return company.ExpectedPer switch {
-            > 30f => company.AddPenalty((int)company.ExpectedPer.CalculateDiffRate(30f, 20f, 10f), $"미래 PER 높음: {company.Per:0.0}"),
-            < 10f => company.AddRecommend(((int)((10f - company.ExpectedPer) * 5)).Clamp(1, 10), $"미래 PER 낮음: {company.Per:0.0}"),
-            _ => company
-        };
+        var w = ScoreWeights.Current;
+        if (company.ExpectedPer > w.ExpPerAbsoluteHighThreshold)
+            return company.AddPenalty((int)company.ExpectedPer.CalculateDiffRate(w.ExpPerAbsoluteHighThreshold, w.ExpPerAbsoluteHighCoefficient, w.ExpPerAbsoluteHighMax), $"미래 PER 높음: {company.ExpectedPer:0.0}");
+        if (company.ExpectedPer < w.ExpPerAbsoluteLowThreshold)
+            return company.AddRecommend(((int)((w.ExpPerAbsoluteLowThreshold - company.ExpectedPer) * w.ExpPerAbsoluteLowMultiplier)).Clamp(w.ExpPerAbsoluteLowMin, w.ExpPerAbsoluteLowMax), $"미래 PER 낮음: {company.ExpectedPer:0.0}");
+        return company;
     }
 
     public static Company AnalyzePbr(this Company company) {
-        return company.Pbr switch {
-            null => company.AddPenalty(10, "PBR 정보 없음"),
-            > 3f => company.AddPenalty((int)company.Pbr.CalculateDiffRate(3f, 5f, 10f), $"PBR 높음 ({company.Pbr:0.0}배)"),
-            < 1f => company.AddRecommend((int)company.Pbr.CalculateDiffRate(1f, 5f, 10f), $"PBR 낮음 ({company.Pbr:0.0}배)"),
-            _ => company
-        };
+        var w = ScoreWeights.Current;
+        if (company.Pbr == null)
+            return company.AddPenalty(w.NoPbrPenalty, "PBR 정보 없음");
+        if (company.Pbr > w.PbrHighThreshold)
+            return company.AddPenalty((int)company.Pbr.CalculateDiffRate(w.PbrHighThreshold, w.PbrCoefficient, w.PbrMax), $"PBR 높음 ({company.Pbr:0.0}배)");
+        if (company.Pbr < w.PbrLowThreshold)
+            return company.AddRecommend((int)company.Pbr.CalculateDiffRate(w.PbrLowThreshold, w.PbrCoefficient, w.PbrMax), $"PBR 낮음 ({company.Pbr:0.0}배)");
+        return company;
     }
 
     public static Company AnalyzeDividendRate(this Company company) {
-        if (company.DividendRate is > 2f) {
-            int point = (int)company.DividendRate.CalculateDiffRate(2f, 10f, 20f, 10f);
+        var w = ScoreWeights.Current;
+        if (company.DividendRate is { } dr && dr > w.DividendThreshold) {
+            int point = (int)company.DividendRate.CalculateDiffRate(w.DividendThreshold, w.DividendCoefficient, w.DividendMax, w.DividendMin);
             return company.AddRecommend(point, $"시가배당률 높음: {company.DividendRate}");
         }
         
@@ -119,6 +126,7 @@ public static class AnalysisHelper {
     }
     
     public static Company AnalyzeYearPerformance(this Company company) {
+        var w = ScoreWeights.Current;
         var prev = company.YearPerformances[0];
 
         float perAvg = 0f;
@@ -132,9 +140,9 @@ public static class AnalysisHelper {
 			string when = isExpected ? "[올해 예상]" : $"[{company.YearPerformances.Length - 1 - i}년 전]";
 			
 			if (cur.NetProfit is < 0) {
-				company.AddPenalty(10 * (i + 1), when + $"당기순손실 ({cur.NetProfit}억)");
+				company.AddPenalty(w.YearNetLossBasePoint * (i + 1), when + $"당기순손실 ({cur.NetProfit}억)");
 			} else if (cur.GrossProfit is < 0) {
-				company.AddPenalty(10 * (i + 1), when + $"영업손실 ({cur.GrossProfit}억)");
+				company.AddPenalty(w.YearGrossLossBasePoint * (i + 1), when + $"영업손실 ({cur.GrossProfit}억)");
 			}
 
 			if (cur.Per is > 0) {
@@ -144,7 +152,7 @@ public static class AnalysisHelper {
 			}
 
 			if (isExpected && cur.GrossProfit == null) {
-				company.AddPenalty(20, "올해 예상 영업이익이 아직 나오지 않았습니다.");
+				company.AddPenalty(w.NoExpectedGrossProfitPenalty, "올해 예상 영업이익이 아직 나오지 않았습니다.");
 			}
 
 			if (i > 0 && cur.GrossProfit is > 0 && prev.GrossProfit != null) {
@@ -153,9 +161,9 @@ public static class AnalysisHelper {
 					int prevProfit = Math.Max(0, (int)prev.GrossProfit);
 					if (prevProfit != 0) {
 						float increaseRate = ((float)curProfit / prevProfit - 1f) * 100f;
-						company.AddRecommend(((int)increaseRate).Clamp(10, 10 + 10 * i), when + $"영업이익 {increaseRate:0.0}% 증가 ({prev.GrossProfit} -> {cur.GrossProfit})");
+						company.AddRecommend(((int)increaseRate).Clamp(w.GrossProfitIncreaseMin, w.GrossProfitIncreaseMaxBase + w.GrossProfitIncreaseMaxBase * i), when + $"영업이익 {increaseRate:0.0}% 증가 ({prev.GrossProfit} -> {cur.GrossProfit})");
 					} else {
-						company.AddRecommend(10, when + $"흑자 전환");
+						company.AddRecommend(w.TurnaroundRecommend, when + $"흑자 전환");
 					}
 				}
 
@@ -163,7 +171,7 @@ public static class AnalysisHelper {
 					float curProfit = (float)cur.GrossProfit;
 					float prevProfit = (float)prev.GrossProfit;
 					float decreaseRate = (1f - (curProfit / prevProfit)) * 100f;
-					company.AddPenalty(Math.Min((int)(decreaseRate * 0.5f), 10 + 10 * i), when + $"영업이익 {decreaseRate:0.0}% 감소: {prev.GrossProfit} -> {cur.GrossProfit}");
+					company.AddPenalty(Math.Min((int)(decreaseRate * w.GrossProfitDecreaseMultiplier), w.GrossProfitDecreaseMaxBase + w.GrossProfitDecreaseMaxBase * i), when + $"영업이익 {decreaseRate:0.0}% 감소: {prev.GrossProfit} -> {cur.GrossProfit}");
 				}
 
 				prev = cur;
@@ -183,20 +191,20 @@ public static class AnalysisHelper {
 			}*/
 
 			if (i >= company.YearPerformances.Length - 2) {
-				if (cur.DebtRatio is > 100f) {
-					company.AddPenalty(10, when + $"부채율 높음 ({cur.DebtRatio:0.0}%)");
+				if (cur.DebtRatio > w.DebtRatioThreshold) {
+					company.AddPenalty(w.DebtRatioPenalty, when + $"부채율 높음 ({cur.DebtRatio:0.0}%)");
 				}
 			
-				if (cur.QuickRatio is < 100f) {
-					company.AddPenalty(10, when + $"당좌비율 낮음 ({cur.QuickRatio:0.0}%)");
-				} else if (cur.QuickRatio > 200f) {
-					company.AddRecommend(10, when + $"당좌비율 높음 ({cur.QuickRatio:0.0}%)");
+				if (cur.QuickRatio is { } qr && qr < w.QuickRatioLowThreshold) {
+					company.AddPenalty(w.QuickRatioLowPenalty, when + $"당좌비율 낮음 ({cur.QuickRatio:0.0}%)");
+				} else if (cur.QuickRatio > w.QuickRatioHighThreshold) {
+					company.AddRecommend(w.QuickRatioHighRecommend, when + $"당좌비율 높음 ({cur.QuickRatio:0.0}%)");
 				}
 			
-				if (cur.ReserveRation is < 500f) {
-					company.AddPenalty(5, when + $"유보율 낮음 ({cur.ReserveRation:0.0}%)");
-				} else if (cur.ReserveRation is > 2000f) {
-					company.AddRecommend(5, when + $"유보율 높음 ({cur.ReserveRation:0.0}%)");
+				if (cur.ReserveRation is { } rr && rr < w.ReserveRatioLowThreshold) {
+					company.AddPenalty(w.ReserveRatioLowPenalty, when + $"유보율 낮음 ({cur.ReserveRation:0.0}%)");
+				} else if (cur.ReserveRation > w.ReserveRatioHighThreshold) {
+					company.AddRecommend(w.ReserveRatioHighRecommend, when + $"유보율 높음 ({cur.ReserveRation:0.0}%)");
 				}
 			}
 		}
@@ -204,7 +212,7 @@ public static class AnalysisHelper {
 		if (perCount > 1) {
 			perAvg /= perCount;
 			if (perAvg > latestPer) {
-				company.AddRecommend((int)perAvg.CalculateDiffRate(latestPer, 20f, 20f, 5f), $"최근 PER({latestPer})이 3년 평균({perAvg})보다 낮음");
+				company.AddRecommend((int)perAvg.CalculateDiffRate(latestPer, w.PerAvgCoefficient, w.PerAvgMax, w.PerAvgMin), $"최근 PER({latestPer})이 3년 평균({perAvg})보다 낮음");
 			}
 		}
 
@@ -212,13 +220,14 @@ public static class AnalysisHelper {
     }
 
     public static Company AnalysisQuarterPerformance(this Company company) {
+        var w = ScoreWeights.Current;
 	    for (int i = 0; i < company.QuarterPerformances.Length; i++) {
 		    var cur = company.QuarterPerformances[i];
 			
 		    bool isExpected = i == company.QuarterPerformances.Length - 1;
 		    string when = isExpected ? "[다음분기 예상]" : $"[{company.QuarterPerformances.Length - 1 - i}분기 전]";
 		    if (cur.NetProfit is < 0) {
-			    company.AddPenalty(10, when + $"당기순손실 ({cur.NetProfit}억)");
+			    company.AddPenalty(w.QuarterNetLossPenalty, when + $"당기순손실 ({cur.NetProfit}억)");
 		    }
 	    }
 

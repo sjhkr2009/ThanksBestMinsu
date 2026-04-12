@@ -26,6 +26,15 @@
 		private System.Windows.Forms.Button buttonSelectFile1; // 비교 대상 파일1 선택
 		private System.Windows.Forms.Button buttonSelectFile2; // 비교 대상 파일2 선택
 
+		// 탭3 컨트롤 (가중치 설정 + JSON 재분석)
+		private System.Windows.Forms.TabPage tabPage3;
+		private System.Windows.Forms.PropertyGrid propertyGridWeights;
+		private System.Windows.Forms.Button buttonResetWeights;      // 기본값 복원
+		private System.Windows.Forms.Button buttonSaveWeights;       // 설정 저장
+		private System.Windows.Forms.Button buttonSelectJsonForWeights; // Json 파일 선택
+		private System.Windows.Forms.Button buttonAnalyzeFromJson;   // 이 기준으로 분석
+		private System.Windows.Forms.RichTextBox richTextBox3;       // 분석 결과 로그
+
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
@@ -67,11 +76,21 @@
 			this.buttonSelectFile1 = new System.Windows.Forms.Button();
 			this.buttonSelectFile2 = new System.Windows.Forms.Button();
 
+			// 탭3 컨트롤 초기화
+			this.tabPage3 = new System.Windows.Forms.TabPage();
+			this.propertyGridWeights = new System.Windows.Forms.PropertyGrid();
+			this.buttonResetWeights = new System.Windows.Forms.Button();
+			this.buttonSaveWeights = new System.Windows.Forms.Button();
+			this.buttonSelectJsonForWeights = new System.Windows.Forms.Button();
+			this.buttonAnalyzeFromJson = new System.Windows.Forms.Button();
+			this.richTextBox3 = new System.Windows.Forms.RichTextBox();
+
 			// 
 			// tabControl
 			// 
 			this.tabControl.Controls.Add(this.tabPage1);
 			this.tabControl.Controls.Add(this.tabPage2);
+			this.tabControl.Controls.Add(this.tabPage3);
 			this.tabControl.Location = new System.Drawing.Point(0, 0);
 			this.tabControl.Name = "tabControl";
 			this.tabControl.SelectedIndex = 0;
@@ -91,7 +110,7 @@
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
 			this.tabPage1.Size = new System.Drawing.Size(1104, 694);
 			this.tabPage1.TabIndex = 0;
-			this.tabPage1.Text = "데이터 분석";
+			this.tabPage1.Text = "데이터 생성";
 			this.tabPage1.UseVisualStyleBackColor = true;
 
 			// 
@@ -109,6 +128,23 @@
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "데이터 비교";
 			this.tabPage2.UseVisualStyleBackColor = true;
+
+			// 
+			// tabPage3 (가중치 설정)
+			// 
+			this.tabPage3.Controls.Add(this.propertyGridWeights);
+			this.tabPage3.Controls.Add(this.buttonResetWeights);
+			this.tabPage3.Controls.Add(this.buttonSaveWeights);
+			this.tabPage3.Controls.Add(this.buttonSelectJsonForWeights);
+			this.tabPage3.Controls.Add(this.buttonAnalyzeFromJson);
+			this.tabPage3.Controls.Add(this.richTextBox3);
+			this.tabPage3.Location = new System.Drawing.Point(4, 22);
+			this.tabPage3.Name = "tabPage3";
+			this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPage3.Size = new System.Drawing.Size(1104, 694);
+			this.tabPage3.TabIndex = 2;
+			this.tabPage3.Text = "가중치 설정";
+			this.tabPage3.UseVisualStyleBackColor = true;
 			
 			// 
 			// 공통: richTextBox
@@ -223,6 +259,73 @@
 			this.buttonSelectFile2.Text = "파일2 선택";
 			this.buttonSelectFile2.UseVisualStyleBackColor = true;
 			this.buttonSelectFile2.Click += new System.EventHandler(this.buttonSelectFile2_Click);
+
+			// 
+			// 탭3: propertyGridWeights (좌측 절반)
+			// 
+			this.propertyGridWeights.Font = new System.Drawing.Font("맑은 고딕", 9F);
+			this.propertyGridWeights.Location = new System.Drawing.Point(15, 15);
+			this.propertyGridWeights.Name = "propertyGridWeights";
+			this.propertyGridWeights.Size = new System.Drawing.Size(430, 580);
+			this.propertyGridWeights.TabIndex = 0;
+			this.propertyGridWeights.PropertySort = System.Windows.Forms.PropertySort.Categorized;
+			this.propertyGridWeights.ToolbarVisible = true;
+			this.propertyGridWeights.HelpVisible = true;
+			// 
+			// 탭3: buttonSaveWeights ("설정 저장")
+			// 
+			this.buttonSaveWeights.Font = new System.Drawing.Font("맑은 고딕", 9F);
+			this.buttonSaveWeights.Location = new System.Drawing.Point(15, 605);
+			this.buttonSaveWeights.Name = "buttonSaveWeights";
+			this.buttonSaveWeights.Size = new System.Drawing.Size(200, 45);
+			this.buttonSaveWeights.TabIndex = 1;
+			this.buttonSaveWeights.Text = "설정 저장";
+			this.buttonSaveWeights.UseVisualStyleBackColor = true;
+			this.buttonSaveWeights.Click += new System.EventHandler(this.buttonSaveWeights_Click);
+			// 
+			// 탭3: buttonResetWeights ("기본값 복원")
+			// 
+			this.buttonResetWeights.Font = new System.Drawing.Font("맑은 고딕", 9F);
+			this.buttonResetWeights.Location = new System.Drawing.Point(225, 605);
+			this.buttonResetWeights.Name = "buttonResetWeights";
+			this.buttonResetWeights.Size = new System.Drawing.Size(200, 45);
+			this.buttonResetWeights.TabIndex = 2;
+			this.buttonResetWeights.Text = "기본값 복원";
+			this.buttonResetWeights.UseVisualStyleBackColor = true;
+			this.buttonResetWeights.Click += new System.EventHandler(this.buttonResetWeights_Click);
+			// 
+			// 탭3: buttonSelectJsonForWeights ("Json 파일 선택")
+			// 
+			this.buttonSelectJsonForWeights.Font = new System.Drawing.Font("맑은 고딕", 9F);
+			this.buttonSelectJsonForWeights.Location = new System.Drawing.Point(465, 15);
+			this.buttonSelectJsonForWeights.Name = "buttonSelectJsonForWeights";
+			this.buttonSelectJsonForWeights.Size = new System.Drawing.Size(300, 36);
+			this.buttonSelectJsonForWeights.TabIndex = 3;
+			this.buttonSelectJsonForWeights.Text = "Json 파일 선택";
+			this.buttonSelectJsonForWeights.UseVisualStyleBackColor = true;
+			this.buttonSelectJsonForWeights.Click += new System.EventHandler(this.buttonSelectJsonForWeights_Click);
+			// 
+			// 탭3: buttonAnalyzeFromJson ("이 기준으로 분석")
+			// 
+			this.buttonAnalyzeFromJson.Enabled = false;
+			this.buttonAnalyzeFromJson.Font = new System.Drawing.Font("메이플스토리", 12F);
+			this.buttonAnalyzeFromJson.Location = new System.Drawing.Point(775, 15);
+			this.buttonAnalyzeFromJson.Name = "buttonAnalyzeFromJson";
+			this.buttonAnalyzeFromJson.Size = new System.Drawing.Size(300, 36);
+			this.buttonAnalyzeFromJson.TabIndex = 4;
+			this.buttonAnalyzeFromJson.Text = "이 기준으로 분석";
+			this.buttonAnalyzeFromJson.UseVisualStyleBackColor = true;
+			this.buttonAnalyzeFromJson.Click += new System.EventHandler(this.buttonAnalyzeFromJson_Click);
+			// 
+			// 탭3: richTextBox3 (분석 결과 로그)
+			// 
+			this.richTextBox3.Font = new System.Drawing.Font("맑은 고딕", 9F);
+			this.richTextBox3.Location = new System.Drawing.Point(465, 60);
+			this.richTextBox3.Name = "richTextBox3";
+			this.richTextBox3.ReadOnly = true;
+			this.richTextBox3.Size = new System.Drawing.Size(620, 590);
+			this.richTextBox3.TabIndex = 5;
+			this.richTextBox3.Text = "";
 
 			// 
 			// BestMinsuWindow

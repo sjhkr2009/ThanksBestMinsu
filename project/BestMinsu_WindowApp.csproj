@@ -98,6 +98,7 @@
     <Compile Include="Controller\SaveHelper.cs" />
     <Compile Include="Data\Company.cs" />
     <Compile Include="Data\CompareCompanyData.cs" />
+    <Compile Include="Data\ScoreWeights.cs" />
     <Compile Include="Director\AnalysisTabController.cs" />
     <Compile Include="Director\CompareTabController.cs" />
     <Compile Include="Utility\CustomExtension.cs" />
